@@ -36,7 +36,7 @@ if args.randomize_flags:
 # Main draft logic
 #
 
-draft_codes = pandas.DataFrame()
+draft_codes = []
 for i in range(args.draft_length):
     choices = codes.sample(3)
     print(f"[Round {i+1}] Choices:")
@@ -54,9 +54,10 @@ for i in range(args.draft_length):
             print("Invalid choice, just 1, 2, or 3 please.")
             continue
 
-        choice = choices.iloc[choice]
+        choice = choices.index[choice - 1]
         draft_codes.append(choice)
+        print(draft_codes)
         break
 
-print(draft_codes)
+draft_codes = codes.loc[draft_codes]
 show_result(draft_codes)
