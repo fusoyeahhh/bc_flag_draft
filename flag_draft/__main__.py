@@ -44,6 +44,7 @@ alpha_codes = [{"Code": chr(c), "Effect": _ALPHA[chr(c)], "IsAlpha": True}
                     for c in range(ord("a"), ord("z")) if chr(c) in _ALPHA]
 codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
 codes["IsAlpha"] = codes["IsAlpha"].fillna(False)
+codes = codes.reset_index()
 
 def show_result(draft_codes):
     print("Draft complete, flag string follows:")
