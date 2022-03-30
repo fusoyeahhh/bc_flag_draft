@@ -47,7 +47,7 @@ codes["IsAlpha"] = codes["IsAlpha"].fillna(False)
 
 def show_result(draft_codes):
     print("Draft complete, flag string follows:")
-    print("".join(draft_codes.loc[draft_codes["IsAlpha"]]["Code"]))
+    print("".join(draft_codes.loc[draft_codes["IsAlpha"]]["Code"].sort_values()))
     print("".join(draft_codes.loc[~draft_codes["IsAlpha"]]["Code"]))
 
 argp = argparse.ArgumentParser()
