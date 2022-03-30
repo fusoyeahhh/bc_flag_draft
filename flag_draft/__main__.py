@@ -3,9 +3,45 @@ import argparse
 import random
 import pandas
 
+# Available modes:
+"""
+1. normal - Play through the normal story.
+2. ancientcave - Play through a long randomized dungeon.
+3. speedcave - Play through a medium-sized randomized dungeon.
+4. racecave - Play through a short randomized dungeon.
+5. katn - Play the normal story up to Kefka at Narshe. Intended for racing.
+6. dragonhunt - Kill all 8 dragons in the World of Ruin. Intended for racing.
+"""
+
+# alpha explanations
+_ALPHA = """b Make the game more balanced by removing known exploits.
+c Randomize palettes and names of various things.
+d Randomize final dungeon.
+e Randomize esper spells and levelup bonuses.
+f Randomize enemy formations.
+g Randomize dances
+h Your party in the Final Kefka fight will be random.
+i Randomize the stats of equippable items.
+j Randomize the phantom forest.
+k Randomize the clock in Zozo
+l Randomize blitz inputs.
+m Randomize enemy stats.
+n Randomize window background colors.
+o Shuffle characters' in-battle commands
+p Randomize the palettes of spells and weapon animations.
+q Randomize what equipment each character can wear and character stats.
+r Randomize character locations in the world of ruin.
+s Swap character graphics around.
+t Randomize treasure, including chests, colosseum, shops, and enemy drops.
+u Umaro risk. (Random character will be berserk)
+w Generate new commands for characters, replacing old commands.
+y Shuffle magicite locations.
+z Always have "Sprint Shoes" effect."""
+_ALPHA = {s[0]: s[2:] for s in _ALPHA.split("\n")}
+
 codes = pandas.read_excel("Codes_v5.2.xls")
-alpha_codes = [{"Code": chr(c), "Effect": None, "IsAlpha": True}
-                    for c in range(ord("a"), ord("z"))]
+alpha_codes = [{"Code": chr(c), "Effect": _ALPHA[chr(c)], "IsAlpha": True}
+                    for c in range(ord("a"), ord("z")) if chr(c) in _ALPHA]
 codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
 codes["IsAlpha"] = codes["IsAlpha"].fillna(False)
 
@@ -26,6 +62,7 @@ args = argp.parse_args()
 
 if args.show_flags:
     print(codes)
+    sys.exit()
 
 if args.randomize_flags:
     draft_codes = codes.sample(min(args.randomize_flags, len(codes)))[["Code", "IsAlpha"]]
