@@ -75,7 +75,7 @@ if args.randomize_flags:
 
 draft_codes = []
 for i in range(args.draft_length):
-    choices = codes.sample(3)
+    choices = codes.loc[codes.index.difference(draft_codes)].sample(3)
     print(f"[Round {i+1}] Choices:")
     j = 1
     for _, choice in choices.iterrows():
@@ -93,7 +93,6 @@ for i in range(args.draft_length):
 
         choice = choices.index[choice - 1]
         draft_codes.append(choice)
-        print(draft_codes)
         break
 
 draft_codes = codes.loc[draft_codes]
