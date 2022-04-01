@@ -14,12 +14,17 @@ from . import options
 6. dragonhunt - Kill all 8 dragons in the World of Ruin. Intended for racing.
 """
 
+CHALLENGES = ("noultima", "noflare", "nomerton", "nolife3", "nolife2",
+              "nodesperation", "nosummons", "noelemental", "nostatus",
+              "noblitz", "notools", "noswdtech",
+              "nothrow", "nomagic", "noitem")
+
 SUBOPTION_CODES = {"expboost", "gpboost", "mpboost",
                    "randomboost", "swdtechspeed"}
 GOOD_MULT, BAD_MULT = (1, 2, 3, 5, 10, 20), (0.9, 0.75, 0.5, 0.25, 0.1)
 ALL_MULT = GOOD_MULT + BAD_MULT
 def add_suboptions(codes):
-    for code in SUBOPTION_CODES - {"swdtechspeed"}:
+    for code in SUBOPTION_CODES - {"swdtechspeed", "challenge"}:
         # TODO: are bad multipliers allowed?
         for idx in codes.loc[codes["name"] == code].index:
             codes.at[idx, "choices"] = GOOD_MULT
@@ -38,7 +43,7 @@ def split_suboptions(codes):
                 tmp.append(_row)
         else:
             tmp.append(row)
-    codes = pandas.DataFrame(tmp).reset_index(drop=True).drop(columns=["index"])
+    codes = pandas.DataFrame(tmp).reset_index(drop=True)
     codes["is_suboption"] = codes["is_suboption"].fillna(False)
     return codes
 
@@ -82,6 +87,8 @@ argp.add_argument("-B", "--ban-category", action="append",
                   help="Code category will not be presented as an option.")
 argp.add_argument("-o", "--only-codes", action="store_true",
                   help="Only randomize over codes, not flags")
+argp.add_argument("-c", "--add-challenges", action="store_true",
+                  help="Add self-imposed challenges to pool.")
 argp.add_argument("-s", "--draft-size", type=int, default=3,
                   help="Provided with numerical argument, do this many choices per round.")
 argp.add_argument("-R", "--draft-rerolls", type=int, default=0,
@@ -100,15 +107,28 @@ if args.standard_draft:
     args.ban_categories = ["gamebreaking"]
     # TODO: check what the standard should be
     args.always_on = ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
-                      "!removeflashing", "!johnnyachaotic", "!johnnydmad"]
+                      "!removeflashing", "!sprint",
+                      "!johnnyachaotic", "!johnnydmad"]
 
-codes = pandas.DataFrame(options.NORMAL_CODES)
+    codes = pandas.DataFrame(options.NORMAL_CODES)
 alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
 alpha_codes["is_flag"] = True
 alpha_codes["long_description"] = alpha_codes["description"]
 codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
+
+if args.add_challenges:
+    SUBOPTION_CODES.add("challenge")
+    # will probably need weights for this
+    new_code = {
+        "name": "challenge",
+        "category": "challenge",
+        "long_description": "Self imposed challenge",
+        "choices":  CHALLENGES
+    }
+    codes = codes.append(new_code, ignore_index=True)
+
 codes["is_flag"] = codes["is_flag"].fillna(False)
-codes = codes.reset_index()
+codes = codes.reset_index(drop=True)
 
 if args.allow_suboptions:
     codes = split_suboptions(codes)
