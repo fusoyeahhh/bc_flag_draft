@@ -1,14 +1,40 @@
 # bc_flag_draft
 Flag Drafting Tools for FFVI BC
 
-## Help
+## Help / Show All Options
 
-`python -m flag_draft --help`
+Use this to see all options.
 
-## Random Flags
-
-`python -m flag_draft -r`
+```bash
+python -m flag_draft --help
+````
 
 ## Draft Flags
 
-`python -m flag_draft -d 5`
+"Standard" means that inappropriate and aesthetic codes are dropped, and standard flags are not included in the pool.
+
+```bash
+python -m flag_draft --standard-draft
+```
+
+Do a "full" draft of 20 rounds, with 5 options per round, and two rerolls allowed. Codes in the `gamebreaking` category are omitted, and codes like `swdtechspeed` and boosts are included with their options.
+
+```bash
+python -m flag_draft --draft-length 20 --draft-size 5 --allow-undo ---allow-reroll 2 --ban-category gamebreaking --allow-suboptions
+```
+
+## Draft Flags (with Challenges)
+
+Same as above, but adds in self-imposed challenges.
+
+```bash
+python -m flag_draft --standard-draft --add-challenges
+```
+
+## Random Flags
+
+Just get a set of the specified number of flags.
+
+```bash
+python -m flag_draft -r 10
+```
