@@ -1,5 +1,10 @@
-# bc_flag_draft
-Flag Drafting Tools for FFVI BC
+# Beyond Chaos Flag Draft
+Flag Drafting Tools for the [FFVI Beyond Chaos](https://github.com/FF6BeyondChaos) randomizer. Inspired by the [the FFIV FE flag drafter](https://www.ff4fedraft.com/).
+
+Requirements
+```bash
+pip install pandas
+```
 
 ## Help / Show All Options
 
