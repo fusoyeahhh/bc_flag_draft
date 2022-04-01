@@ -77,7 +77,19 @@ argp.add_argument("-R", "--draft-rerolls", type=int, default=0,
                   help="Allow this many rerolls. Default is zero.")
 argp.add_argument("-d", "--draft-length", type=int, default=5,
                   help="Provided with numerical argument, do this many draft rounds.")
+argp.add_argument("--standard-draft", action="store_true",
+                  help="Remove codes which are unsafe, not gameplay related "
+                       "or standard mode inappropriate. "
+                       "Implies --only-codes and --allow-suboptions.")
 args = argp.parse_args()
+
+if args.standard_draft:
+    args.only_codes = True
+    args.allow_suboptions = True
+    args.ban_categories = ["gamebreaking"]
+    # TODO: check what the standard should be
+    args.always_on = ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
+                      "!removeflashing", "!johnnyachaotic", "!johnnydmad"]
 
 codes = pandas.DataFrame(options.NORMAL_CODES)
 alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
@@ -143,9 +155,9 @@ while len(draft_codes) <= args.draft_length + len(args.always_on or []):
     j = 1
     for idx, choice in choices.iterrows():
         if choice["selected"]:
-            print(f"({j}) [UNDO] {choice['name']}: {choice['long_description']}")
+            print(f"({j}) [UNDO] {choice['name']} <{choice['category']}>: {choice['long_description']}")
         else:
-            print(f"({j}) {choice['name']}: {choice['long_description']}")
+            print(f"({j}) {choice['name']} <{choice['category']}>: {choice['long_description']}")
         j += 1
     if rerolls > 0:
         print(f"({j}) reroll")
