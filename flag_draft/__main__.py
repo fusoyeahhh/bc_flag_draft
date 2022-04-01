@@ -188,7 +188,7 @@ while len(draft_codes) <= args.draft_length + start_flags:
     choices = codes.loc[pool].sample(args.draft_size)[:]
     choices["selected"] = choices.index.isin(draft_codes)
 
-    print(f"[Round {i+1}] Choices:")
+    print(f"\n[Round {i+1}]\nChoices:")
     j = 1
     for idx, choice in choices.iterrows():
         if choice["selected"]:
@@ -220,7 +220,6 @@ while len(draft_codes) <= args.draft_length + start_flags:
             draft_codes.append(choice)
         i += 1
         break
-    print()
 
 draft_codes = codes.loc[draft_codes]
 show_result(draft_codes)
