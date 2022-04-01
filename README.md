@@ -9,6 +9,14 @@ Use this to see all options.
 python -m flag_draft --help
 ````
 
+## Show Draft Flags / Codes
+
+Add `-S` to see all codes and flags in the pool with other options.
+
+```bash
+python -m flag_draft --standard-draft --add-challenges -S
+````
+
 ## Draft Flags
 
 "Standard" means that inappropriate and aesthetic codes are dropped, and standard flags are not included in the pool.

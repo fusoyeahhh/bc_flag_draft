@@ -2,6 +2,9 @@ import sys
 import copy
 import argparse
 import pandas
+pandas.set_option("display.max_rows", 1000)
+pandas.set_option("display.max_columns", 20)
+pandas.set_option("display.max_colwidth", 200)
 from . import options
 
 # Available modes:
@@ -157,7 +160,7 @@ if args.only_codes:
     print(f"Dropping standard flags from pool.")
 
 if args.show_flags:
-    print(codes)
+    print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
     sys.exit()
 
 if len(codes) < args.draft_length + args.draft_size:
