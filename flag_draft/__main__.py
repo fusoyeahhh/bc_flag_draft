@@ -14,7 +14,18 @@ from . import options
 6. dragonhunt - Kill all 8 dragons in the World of Ruin. Intended for racing.
 """
 
+SUBOPTION_CODES = {"expboost", "gpboost", "mpboost",
+                   "randomboost", "swdtechspeed"}
+GOOD_MULT, BAD_MULT = (1, 2, 3, 5, 10, 20), (0.9, 0.75, 0.5, 0.25, 0.1)
+ALL_MULT = GOOD_MULT + BAD_MULT
+def add_suboptions(codes):
+    for code in SUBOPTION_CODES - {"swdtechspeed"}:
+        # TODO: are bad multipliers allowed?
+        for idx in codes.loc[codes["name"] == code].index:
+            codes.at[idx, "choices"] = GOOD_MULT
+
 def split_suboptions(codes):
+    add_suboptions(codes)
     tmp = []
     for _, row in codes.iterrows():
         if pandas.notna(row["choices"]):
@@ -102,6 +113,8 @@ codes = codes.reset_index()
 if args.allow_suboptions:
     codes = split_suboptions(codes)
 else:
+    # Drop multiplier codes
+    codes = codes.loc[codes["name"].isin(SUBOPTION_CODES)]
     codes["is_suboption"] = False
 
 draft_codes = []
