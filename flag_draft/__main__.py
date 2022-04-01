@@ -1,4 +1,5 @@
 import sys
+import copy
 import argparse
 import pandas
 from . import options
@@ -13,25 +14,60 @@ from . import options
 6. dragonhunt - Kill all 8 dragons in the World of Ruin. Intended for racing.
 """
 
+def split_suboptions(codes):
+    tmp = []
+    for _, row in codes.iterrows():
+        if pandas.notna(row["choices"]):
+            print(f"Splitting {row['name']} into suboptions: {row['choices']}")
+            for opt in row["choices"]:
+                _row = copy.copy(row)
+                _row["name"] += "=" + str(opt)
+                _row["suboption_of"] = row["name"]
+                _row["is_suboption"] = True
+                tmp.append(_row)
+        else:
+            tmp.append(row)
+    codes = pandas.DataFrame(tmp).reset_index(drop=True).drop(columns=["index"])
+    codes["is_suboption"] = codes["is_suboption"].fillna(False)
+    return codes
+
+def maybe_replace_option(index, drafted_index, codes):
+    opt = codes.loc[index]
+    if not opt["is_suboption"]:
+        return drafted_index
+
+    _codes = codes.loc[drafted_index]
+    opt = _codes.loc[opt["suboption_of"] == _codes["suboption_of"]]
+    return list(set(drafted_index) - set(opt.index))
+
 def show_result(draft_codes):
     print("Draft complete, flag string follows:")
-    print("".join(draft_codes.loc[draft_codes["is_flag"]]["name"].sort_values()))
-    print("".join(draft_codes.loc[~draft_codes["is_flag"]]["name"]))
+    flags = draft_codes.loc[draft_codes["is_flag"]]["name"].sort_values()
+    subopts = draft_codes.loc[draft_codes["is_suboption"]]["name"].sort_values()
+    codes = ~(draft_codes["is_flag"] | draft_codes["is_suboption"])
+    print("Standard flags:")
+    print("".join(flags))
+    print("Standard codes:")
+    print("".join(draft_codes.loc[codes]["name"]))
+    print("Codes with options:")
+    print(" ".join(subopts))
 
 argp = argparse.ArgumentParser()
 argp.add_argument("-S", "--show-flags", action="store_true",
                   help="Show available flags for draft.")
+argp.add_argument("-r", "--randomize-flags", type=int,
+                  help="Provided with numerical argument, give that many random flags.")
 argp.add_argument("-a", "--always-on", action="append",
                   help="Code will not be presented as an option, "
                        " and always present in final result. "
                        "Prefix with '!' to ban code.")
-# TODO: merge with above and use "-" as a removal
+argp.add_argument("-O", "--allow-suboptions", action="store_true",
+                  help="Pool codes into the pool which have options, "
+                       "one for each suboption.")
 argp.add_argument("-B", "--ban-category", action="append",
                   help="Code category will not be presented as an option.")
 argp.add_argument("-o", "--only-codes", action="store_true",
                   help="Only randomize over codes, not flags")
-argp.add_argument("-r", "--randomize-flags", type=int,
-                  help="Provided with numerical argument, give that many random flags.")
 argp.add_argument("-s", "--draft-size", type=int, default=3,
                   help="Provided with numerical argument, do this many choices per round.")
 argp.add_argument("-R", "--draft-rerolls", type=int, default=0,
@@ -48,25 +84,36 @@ codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
 codes["is_flag"] = codes["is_flag"].fillna(False)
 codes = codes.reset_index()
 
+if args.allow_suboptions:
+    codes = split_suboptions(codes)
+else:
+    codes["is_suboption"] = False
+
 draft_codes = []
 always_on = {code for code in args.always_on if not code.startswith("!")}
 if always_on:
     turn_on = codes["name"].isin(always_on)
     draft_codes.extend(codes.loc[turn_on].index)
     codes = codes.loc[codes.index.difference(turn_on)]
+    print(f"Adding {always_on} into pool automatically.")
 
 ban_code = {code[1:] for code in args.always_on if code.startswith("!")}
 if ban_code:
-    turn_off = codes["name"].isin(ban_code)
-    codes = codes.loc[codes.index.difference(turn_off)]
+    codes = codes.loc[~codes["name"].isin(ban_code)]
+    print(f"Banning {ban_code} from pool.")
 if args.ban_category:
     codes = codes.loc[~codes["category"].isin(args.ban_category)]
+    print(f"Banning category {args.ban_category} from pool.")
 if args.only_codes:
     codes = codes.loc[~codes["is_flag"]]
+    print(f"Dropping standard flags from pool.")
 
 if args.show_flags:
     print(codes)
     sys.exit()
+
+if len(codes) < args.draft_length + args.draft_size:
+    print("WARNING: there may not be enough codes to complete draft")
 
 if args.randomize_flags:
     draft_codes = codes.sample(min(args.randomize_flags, len(codes)))[["name", "is_flag"]]
@@ -97,13 +144,16 @@ while len(draft_codes) < args.draft_length + len(args.always_on or []):
             choice = int(input("choice> "))
         except ValueError:
             choice = None
-        if rerolls > 0 and choice == 4:
+        allowed_choices = list(range(1, args.draft_size + int(rerolls > 0) + 1))
+        if rerolls > 0 and choice == allowed_choices[-1]:
+            rerolls -= 1
             break
-        elif choice not in (1, 2, 3):
-            print("Invalid choice, just 1, 2, or 3 please.")
+        elif choice not in allowed_choices:
+            print(f"Invalid choice, just 1 - {allowed_choices[-1]} please.")
             continue
 
         choice = choices.index[choice - 1]
+        draft_codes = maybe_replace_option(choice, draft_codes, codes)
         draft_codes.append(choice)
         i += 1
         break
