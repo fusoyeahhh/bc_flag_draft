@@ -64,6 +64,9 @@ argp.add_argument("-a", "--always-on", action="append",
 argp.add_argument("-O", "--allow-suboptions", action="store_true",
                   help="Pool codes into the pool which have options, "
                        "one for each suboption.")
+argp.add_argument("-u", "--allow-undo", action="store_true",
+                  help="Allow selected choices to go back into pool. "
+                       "A subsequent appearance and selection will remove flag from draft.")
 argp.add_argument("-B", "--ban-category", action="append",
                   help="Code category will not be presented as an option.")
 argp.add_argument("-o", "--only-codes", action="store_true",
@@ -127,14 +130,22 @@ if args.randomize_flags:
 rerolls = args.draft_rerolls or 0
 
 i = 0
-while len(draft_codes) < args.draft_length + len(args.always_on or []):
-    pool = codes.index.difference(draft_codes)
-    choices = codes.loc[pool].sample(args.draft_size)
+while len(draft_codes) <= args.draft_length + len(args.always_on or []):
+    if args.allow_undo:
+        pool = codes.index
+    else:
+        pool = codes.index.difference(draft_codes)
+
+    choices = codes.loc[pool].sample(args.draft_size)[:]
+    choices["selected"] = choices.index.isin(draft_codes)
 
     print(f"[Round {i+1}] Choices:")
     j = 1
-    for _, choice in choices.iterrows():
-        print(f"({j}) {choice['name']}: {choice['long_description']}")
+    for idx, choice in choices.iterrows():
+        if choice["selected"]:
+            print(f"({j}) [UNDO] {choice['name']}: {choice['long_description']}")
+        else:
+            print(f"({j}) {choice['name']}: {choice['long_description']}")
         j += 1
     if rerolls > 0:
         print(f"({j}) reroll")
@@ -154,9 +165,13 @@ while len(draft_codes) < args.draft_length + len(args.always_on or []):
 
         choice = choices.index[choice - 1]
         draft_codes = maybe_replace_option(choice, draft_codes, codes)
-        draft_codes.append(choice)
+        if choices.loc[choice]["selected"]:
+            draft_codes.remove(choice)
+        else:
+            draft_codes.append(choice)
         i += 1
         break
+    print()
 
 draft_codes = codes.loc[draft_codes]
 show_result(draft_codes)
