@@ -148,7 +148,7 @@ if always_on:
     codes = codes.loc[codes.index.difference(turn_on)]
     print(f"Adding {always_on} into pool automatically.")
 
-ban_code = {code[1:] for code in args.always_on if code.startswith("!")}
+ban_code = {code[1:] for code in (args.always_on or []) if code.startswith("!")}
 if ban_code:
     codes = codes.loc[~codes["name"].isin(ban_code)]
     print(f"Banning {ban_code} from pool.")
