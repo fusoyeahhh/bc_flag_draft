@@ -27,7 +27,11 @@ args = argp.parse_args()
 if args.standard_draft:
     args = args_.enable_standard_draft(args)
 
-draft_codes, codes = construct_pool(args)
+draft_codes, codes = construct_pool(only_codes=args.only_codes,
+                                    allow_suboptions=args.allow_suboptions,
+                                    add_challenges=args.add_challenges,
+                                    always_on=args.always_on,
+                                    ban_category=args.ban_categories)
 
 if args.show_flags:
     show_flags(codes)
@@ -53,7 +57,7 @@ rerolls = args.draft_rerolls or 0
 round = 0
 start_flags = len(draft_codes)
 while len(draft_codes) < args.draft_length + start_flags:
-    choices = pull_from_pool(codes, draft_codes, args)
+    choices = pull_from_pool(codes, draft_codes, args.draft_size, args.allow_undo)
 
     display_choices(choices, draft_codes, round, rerolls)
 

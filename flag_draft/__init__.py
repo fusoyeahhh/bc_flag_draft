@@ -70,7 +70,8 @@ def show_result(draft_codes):
     print("Codes with options:")
     print(" ".join(subopts))
 
-def construct_pool(args):
+def construct_pool(only_codes=False, allow_suboptions=True,
+                   add_challenges=False, always_on={}, ban_category={}):
     codes = pandas.DataFrame(options.NORMAL_CODES)
     alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
     alpha_codes["is_flag"] = True
@@ -78,7 +79,7 @@ def construct_pool(args):
     alpha_codes["category"] = "flags"
     codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
 
-    if args.add_challenges:
+    if add_challenges:
         SUBOPTION_CODES.add("challenge")
         # will probably need weights for this
         new_code = {
@@ -93,45 +94,44 @@ def construct_pool(args):
     codes = codes.reset_index(drop=True)
 
     codes["is_suboption"] = False
-    if args.allow_suboptions:
+    if allow_suboptions:
         codes = split_suboptions(codes)
     else:
         # Drop multiplier codes
         codes = codes.loc[~codes["name"].isin(SUBOPTION_CODES)]
 
     draft_codes = []
-    always_on = {code for code in args.always_on if not code.startswith("!")}
+    always_on = {code for code in (always_on or []) if not code.startswith("!")}
     codes["status"] = None
     if always_on:
         turn_on = codes["name"].isin(always_on)
         draft_codes.extend(codes.loc[turn_on].index)
-        #codes = codes.loc[codes.index.difference(turn_on)]
         codes.loc[turn_on,"status"] = "always_on"
         print(f"Adding {always_on} into pool automatically.")
 
-    ban_code = {code[1:] for code in (args.always_on or []) if code.startswith("!")}
+    ban_code = {code[1:] for code in (always_on or []) if code.startswith("!")}
     get_banned = codes["name"].isin(ban_code)
     if ban_code:
         print(f"Banning {ban_code} from pool.")
-    if args.ban_category:
-        get_banned |= codes["category"].isin(args.ban_category)
-        print(f"Banning category {args.ban_category} from pool.")
+    if ban_category:
+        get_banned |= codes["category"].isin(ban_category)
+        print(f"Banning category {ban_category} from pool.")
     codes.loc[get_banned,"status"] = "banned"
 
-    if args.only_codes:
+    if only_codes:
         codes = codes.loc[~codes["is_flag"]]
         print(f"Dropping standard flags from pool.")
 
     return draft_codes, codes
 
-def pull_from_pool(codes, draft_codes, args):
-    if args.allow_undo:
+def pull_from_pool(codes, draft_codes, draft_size=3, allow_undo=False):
+    if allow_undo:
         pool = codes.index
     else:
         pool = codes.index.difference(draft_codes)
     pool = pool.intersection(codes.loc[codes["status"].isna()].index)
 
-    choices = codes.loc[pool].sample(args.draft_size)[:]
+    choices = codes.loc[pool].sample(draft_size)[:]
     choices["selected"] = choices.index.isin(draft_codes)
     return choices
 
