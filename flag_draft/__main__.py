@@ -38,6 +38,7 @@ if len(codes) < args.draft_length + args.draft_size:
     print("WARNING: there may not be enough codes to complete draft")
 
 if args.randomize_flags:
+    # TODO: use pull_from_pool
     draft_codes = codes.sample(min(args.randomize_flags, len(codes)))
     print("Draft complete, flag string follows:")
     show_result(draft_codes)
@@ -49,12 +50,12 @@ if args.randomize_flags:
 
 rerolls = args.draft_rerolls or 0
 
-i = 0
+round = 0
 start_flags = len(draft_codes)
 while len(draft_codes) < args.draft_length + start_flags:
     choices = pull_from_pool(codes, draft_codes, args)
 
-    display_choices(choices, draft_codes, i, rerolls)
+    display_choices(choices, draft_codes, round, rerolls)
 
     while True:
         try:
@@ -84,7 +85,7 @@ while len(draft_codes) < args.draft_length + start_flags:
             draft_codes.remove(choice)
         else:
             draft_codes.append(choice)
-        i += 1
+        round += 1
         break
 
 draft_codes = codes.loc[draft_codes]

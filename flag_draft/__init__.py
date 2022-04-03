@@ -138,15 +138,15 @@ def pull_from_pool(codes, draft_codes, args):
 def display_choices(choices, draft_codes, round, rerolls=0):
     print(f"\n[Round {round + 1}]\ntotal choices so far: {len(draft_codes)}\nChoices:")
 
-    j = 1
-    for idx, choice in choices.iterrows():
-        if choice["selected"]:
-            print(f"({j}) [UNDO] {choice['name']} <{choice['category']}>: {choice['long_description']}")
-        else:
-            print(f"({j}) {choice['name']} <{choice['category']}>: {choice['long_description']}")
-        j += 1
+    for i, (idx, choice) in enumerate(choices.iterrows()):
+        i += 1
+        cstatus = ""
+        cstatus += "UNDO" if choice["selected"] else ""
+        # FIXME: "replace" tag
+        cstatus = f" [{cstatus}]" if cstatus else ""
+        print(f"({i}){cstatus} {choice['name']} <{choice['category']}>: {choice['long_description']}")
     if rerolls > 0:
-        print(f"({j}) reroll")
+        print(f"({i}) reroll")
 
 def show_flags(codes):
     print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
