@@ -113,7 +113,7 @@ if args.standard_draft:
                       "!removeflashing", "!sprint",
                       "!johnnyachaotic", "!johnnydmad"]
 
-    codes = pandas.DataFrame(options.NORMAL_CODES)
+codes = pandas.DataFrame(options.NORMAL_CODES)
 alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
 alpha_codes["is_flag"] = True
 alpha_codes["long_description"] = alpha_codes["description"]
