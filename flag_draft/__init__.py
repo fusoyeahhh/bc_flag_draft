@@ -147,3 +147,6 @@ def display_choices(choices, draft_codes, round, rerolls=0):
         j += 1
     if rerolls > 0:
         print(f"({j}) reroll")
+
+def show_flags(codes):
+    print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])

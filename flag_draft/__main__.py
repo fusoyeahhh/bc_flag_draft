@@ -4,7 +4,6 @@ import pandas
 pandas.set_option("display.max_rows", 1000)
 pandas.set_option("display.max_columns", 20)
 pandas.set_option("display.max_colwidth", 200)
-from . import options
 from . import args as args_
 from . import *
 
@@ -31,7 +30,7 @@ if args.standard_draft:
 draft_codes, codes = construct_pool(args)
 
 if args.show_flags:
-    print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
+    show_flags(codes)
     sys.exit()
 
 print(f"Pool size (does not count overlapping suboptions: {len(codes)}")
