@@ -24,13 +24,15 @@ CHALLENGES = ("noultima", "noflare", "nomerton", "nolife3", "nolife2",
 
 SUBOPTION_CODES = {"expboost", "gpboost", "mpboost",
                    "randomboost", "swdtechspeed"}
-GOOD_MULT, BAD_MULT = (1, 2, 3, 5, 10, 20), (0.9, 0.75, 0.5, 0.25, 0.1)
+GOOD_MULT, BAD_MULT = (1, 2, 3, 5, 10), (0.9, 0.75, 0.5, 0.25)
 ALL_MULT = GOOD_MULT + BAD_MULT
 def add_suboptions(codes):
-    for code in SUBOPTION_CODES - {"swdtechspeed", "challenge"}:
-        # TODO: are bad multipliers allowed?
+    for code in SUBOPTION_CODES - {"swdtechspeed", "challenge", "randomboost"}:
         for idx in codes.loc[codes["name"] == code].index:
-            codes.at[idx, "choices"] = GOOD_MULT
+            codes.at[idx, "choices"] = ALL_MULT
+    for code in {"randomboost"}:
+        for idx in codes.loc[codes["name"] == code].index:
+            codes.at[idx, "choices"] = (0, 1, 2)
 
 def split_suboptions(codes):
     add_suboptions(codes)
