@@ -208,8 +208,13 @@ while len(draft_codes) < args.draft_length + start_flags:
             choice = int(input("choice> "))
         except ValueError:
             choice = None
+
         if choice == 0:
             show_result(codes.loc[draft_codes])
+            continue
+        elif choice == -1:
+            # TODO: make into function
+            print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
             continue
 
         allowed_choices = list(range(1, args.draft_size + int(rerolls > 0) + 1))
