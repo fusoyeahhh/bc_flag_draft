@@ -183,7 +183,6 @@ rerolls = args.draft_rerolls or 0
 i = 0
 start_flags = len(draft_codes)
 while len(draft_codes) < args.draft_length + start_flags:
-    print(len(draft_codes), args.draft_length, start_flags)
     if args.allow_undo:
         pool = codes.index
     else:
@@ -192,7 +191,7 @@ while len(draft_codes) < args.draft_length + start_flags:
     choices = codes.loc[pool].sample(args.draft_size)[:]
     choices["selected"] = choices.index.isin(draft_codes)
 
-    print(f"\n[Round {i+1}]\nChoices:")
+    print(f"\n[Round {i+1}]\ntotal choices so far: {len(draft_codes)}\nChoices:")
     j = 1
     for idx, choice in choices.iterrows():
         if choice["selected"]:
