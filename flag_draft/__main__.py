@@ -207,6 +207,10 @@ while len(draft_codes) < args.draft_length + start_flags:
             choice = int(input("choice> "))
         except ValueError:
             choice = None
+        if choice == 0:
+            show_result(codes.loc[draft_codes])
+            continue
+
         allowed_choices = list(range(1, args.draft_size + int(rerolls > 0) + 1))
         if rerolls > 0 and choice == allowed_choices[-1]:
             rerolls -= 1
