@@ -1,6 +1,3 @@
-import copy
-import pandas
-
 from . import SUBOPTION_CODES, CHALLENGES
 from . import split_suboptions, construct_pool
 

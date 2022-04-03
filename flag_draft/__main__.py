@@ -7,7 +7,6 @@ pandas.set_option("display.max_colwidth", 200)
 
 from .drafter import BCFlagDrafter
 from . import args as args_
-from . import *
 
 __version__ = "0.0.2-beta"
 
