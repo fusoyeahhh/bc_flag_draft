@@ -111,9 +111,10 @@ if args.standard_draft:
     args.allow_suboptions = True
     args.ban_categories = ["gamebreaking"]
     # TODO: check what the standard should be
-    args.always_on = ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
-                      "!removeflashing", "!sprint",
-                      "!johnnyachaotic", "!johnnydmad"]
+    args.always_on = args.always_on or []
+    args.always_on += ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
+                       "!removeflashing", "!sprint",
+                       "!johnnyachaotic", "!johnnydmad"]
 
 codes = pandas.DataFrame(options.NORMAL_CODES)
 alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
