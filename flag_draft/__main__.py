@@ -8,6 +8,10 @@ from . import options
 from . import args as args_
 from . import *
 
+__version__ = "0.0.2-beta"
+
+# Ideas:
+# Add gameplay mode options, see below
 # Available modes:
 """
 1. normal - Play through the normal story.
