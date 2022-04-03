@@ -140,7 +140,7 @@ if args.allow_suboptions:
     codes = split_suboptions(codes)
 else:
     # Drop multiplier codes
-    codes = codes.loc[codes["name"].isin(SUBOPTION_CODES)]
+    codes = codes.loc[~codes["name"].isin(SUBOPTION_CODES)]
     codes["is_suboption"] = False
 
 draft_codes = []
@@ -166,6 +166,7 @@ if args.show_flags:
     print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
     sys.exit()
 
+print(f"Pool size (does not count overlapping suboptions: {len(codes)}")
 if len(codes) < args.draft_length + args.draft_size:
     print("WARNING: there may not be enough codes to complete draft")
 
