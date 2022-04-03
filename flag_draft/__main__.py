@@ -179,7 +179,8 @@ rerolls = args.draft_rerolls or 0
 
 i = 0
 start_flags = len(draft_codes)
-while len(draft_codes) <= args.draft_length + start_flags:
+while len(draft_codes) < args.draft_length + start_flags:
+    print(len(draft_codes), args.draft_length, start_flags)
     if args.allow_undo:
         pool = codes.index
     else:
