@@ -31,3 +31,15 @@ def construct_args(argp):
                            "Implies --only-codes and --allow-suboptions.")
 
     return argp
+
+def enable_standard_draft(args):
+    args.only_codes = True
+    args.allow_suboptions = True
+    args.ban_categories = ["gamebreaking"]
+    # TODO: check what the standard should be
+    args.always_on = args.always_on or []
+    args.always_on += ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
+                       "!removeflashing", "!sprint",
+                       "!johnnyachaotic", "!johnnydmad"]
+
+    return args

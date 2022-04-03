@@ -55,7 +55,7 @@ def maybe_replace_option(index, drafted_index, codes):
     if not opt["is_suboption"]:
         return drafted_index
 
-    _codes = codes.loc[drafted_index]
+    _codes = codes.loc[codes.index.intersection(drafted_index)]
     opt = _codes.loc[opt["suboption_of"] == _codes["suboption_of"]]
     return list(set(drafted_index) - set(opt.index))
 
@@ -101,19 +101,23 @@ def construct_pool(args):
 
     draft_codes = []
     always_on = {code for code in args.always_on if not code.startswith("!")}
+    codes["status"] = None
     if always_on:
         turn_on = codes["name"].isin(always_on)
         draft_codes.extend(codes.loc[turn_on].index)
-        codes = codes.loc[codes.index.difference(turn_on)]
+        #codes = codes.loc[codes.index.difference(turn_on)]
+        codes.loc[turn_on,"status"] = "always_on"
         print(f"Adding {always_on} into pool automatically.")
 
     ban_code = {code[1:] for code in (args.always_on or []) if code.startswith("!")}
+    get_banned = codes["name"].isin(ban_code)
     if ban_code:
-        codes = codes.loc[~codes["name"].isin(ban_code)]
         print(f"Banning {ban_code} from pool.")
     if args.ban_category:
-        codes = codes.loc[~codes["category"].isin(args.ban_category)]
+        get_banned |= codes["category"].isin(args.ban_category)
         print(f"Banning category {args.ban_category} from pool.")
+    codes.loc[get_banned,"status"] = "banned"
+
     if args.only_codes:
         codes = codes.loc[~codes["is_flag"]]
         print(f"Dropping standard flags from pool.")
@@ -125,6 +129,7 @@ def pull_from_pool(codes, draft_codes, args):
         pool = codes.index
     else:
         pool = codes.index.difference(draft_codes)
+    pool = pool.intersection(codes.loc[codes["status"].isna()].index)
 
     choices = codes.loc[pool].sample(args.draft_size)[:]
     choices["selected"] = choices.index.isin(draft_codes)

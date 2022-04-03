@@ -5,6 +5,7 @@ pandas.set_option("display.max_rows", 1000)
 pandas.set_option("display.max_columns", 20)
 pandas.set_option("display.max_colwidth", 200)
 from . import options
+from . import args as args_
 from . import *
 
 # Available modes:
@@ -21,14 +22,7 @@ argp = args_.construct_args(argparse.ArgumentParser())
 args = argp.parse_args()
 
 if args.standard_draft:
-    args.only_codes = True
-    args.allow_suboptions = True
-    args.ban_categories = ["gamebreaking"]
-    # TODO: check what the standard should be
-    args.always_on = args.always_on or []
-    args.always_on += ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
-                       "!removeflashing", "!sprint",
-                       "!johnnyachaotic", "!johnnydmad"]
+    args = args_.enable_standard_draft(args)
 
 draft_codes, codes = construct_pool(args)
 
