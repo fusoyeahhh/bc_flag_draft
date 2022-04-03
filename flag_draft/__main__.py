@@ -4,10 +4,24 @@ import pandas
 pandas.set_option("display.max_rows", 1000)
 pandas.set_option("display.max_columns", 20)
 pandas.set_option("display.max_colwidth", 200)
+
+from .drafter import BCFlagDrafter
 from . import args as args_
 from . import *
 
 __version__ = "0.0.2-beta"
+
+def display_choices(choices, rerolls):
+    for i, (idx, choice) in enumerate(choices.iterrows()):
+        i += 1
+        cstatus = ""
+        cstatus += "UNDO" if choice["selected"] else ""
+        # TODO: note replacements
+        cstatus = f" [{cstatus}]" if cstatus else ""
+        print(f"({i}){cstatus} {choice['name']} <{choice['category']}>: {choice['long_description']}")
+    # FIXME: append as dummy choice
+    if rerolls > 0:
+        print(f"({i + 1}) reroll [{rerolls} remaining]")
 
 # Ideas:
 # Add gameplay mode options, see below
@@ -27,39 +41,33 @@ args = argp.parse_args()
 if args.standard_draft:
     args = args_.enable_standard_draft(args)
 
-draft_codes, codes = construct_pool(only_codes=args.only_codes,
-                                    allow_suboptions=args.allow_suboptions,
-                                    add_challenges=args.add_challenges,
-                                    always_on=args.always_on,
-                                    ban_category=args.ban_categories)
+drafter = BCFlagDrafter(only_codes=args.only_codes,
+                        allow_suboptions=args.allow_suboptions,
+                        add_challenges=args.add_challenges,
+                        rerolls=args.draft_rerolls,
+                        always_on=args.always_on,
+                        ban_category=args.ban_categories)
 
 if args.show_flags:
-    show_flags(codes)
+    drafter.show_flags()
     sys.exit()
 
-print(f"Pool size (does not count overlapping suboptions: {len(codes)}")
-if len(codes) < args.draft_length + args.draft_size:
-    print("WARNING: there may not be enough codes to complete draft")
+print(f"Pool size (does not count overlapping suboptions): {len(drafter.codes)}")
 
 if args.randomize_flags:
-    # TODO: use pull_from_pool
-    draft_codes = codes.sample(min(args.randomize_flags, len(codes)))
+    drafter.randomize_flags(args.randomize_flags)
     print("Draft complete, flag string follows:")
-    show_result(draft_codes)
+    drafter.show_result()
     sys.exit()
 
 #
 # Main draft logic
 #
 
-rerolls = args.draft_rerolls or 0
-
-round = 0
-start_flags = len(draft_codes)
-while len(draft_codes) < args.draft_length + start_flags:
-    choices = pull_from_pool(codes, draft_codes, args.draft_size, args.allow_undo)
-
-    display_choices(choices, draft_codes, round, rerolls)
+for choices in drafter.draft(args.draft_length, args.draft_size):
+    print(f"\n[Round {drafter.round + 1}]\ntotal choices so far: "
+          f"{len(drafter.draft_codes)}\nChoices:")
+    display_choices(choices, drafter.rerolls)
 
     while True:
         try:
@@ -68,30 +76,21 @@ while len(draft_codes) < args.draft_length + start_flags:
             choice = None
 
         if choice == 0:
-            show_result(codes.loc[draft_codes])
+            drafter.show_result()
             continue
         elif choice == -1:
-            # TODO: make into function
-            print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
+            drafter.show_flags()
             continue
 
-        allowed_choices = list(range(1, args.draft_size + int(rerolls > 0) + 1))
-        if rerolls > 0 and choice == allowed_choices[-1]:
-            rerolls -= 1
-            break
-        elif choice not in allowed_choices:
+        allowed_choices = list(range(1, args.draft_size + int(drafter.rerolls > 0) + 1))
+        if choice not in allowed_choices:
             print(f"Invalid choice, just 1 - {allowed_choices[-1]} please.")
             continue
 
-        choice = choices.index[choice - 1]
-        draft_codes = maybe_replace_option(choice, draft_codes, codes)
-        if choices.loc[choice]["selected"]:
-            draft_codes.remove(choice)
-        else:
-            draft_codes.append(choice)
-        round += 1
+        is_reroll = choice == allowed_choices[-1] and drafter.rerolls > 0
+        drafter.draft_code(idx=choices.index[choice - 1],
+                           is_reroll=is_reroll)
         break
 
-draft_codes = codes.loc[draft_codes]
 print("Draft complete, flag string follows:")
-show_result(draft_codes)
+drafter.show_result()

@@ -12,9 +12,7 @@ FLAG_CONFLICTS = {
 }
 
 # TODO: add termcolor (if possible)
-# TODO: move all this to init
 # TODO: add weights: noeffect, easy, normal, hard
-# TODO: note replacements
 CHALLENGES = ("noultima", "noflare", "nomerton", "nolife3", "nolife2",
               "nodesperation", "nosummons", "noelemental", "nostatus",
               "noblitz", "notools", "noswdtech",
@@ -50,103 +48,10 @@ def split_suboptions(codes):
     codes["is_suboption"] = codes["is_suboption"].fillna(False)
     return codes
 
-def maybe_replace_option(index, drafted_index, codes):
-    opt = codes.loc[index]
-    if not opt["is_suboption"]:
-        return drafted_index
-
-    _codes = codes.loc[codes.index.intersection(drafted_index)]
-    opt = _codes.loc[opt["suboption_of"] == _codes["suboption_of"]]
-    return list(set(drafted_index) - set(opt.index))
-
-def show_result(draft_codes):
-    flags = draft_codes.loc[draft_codes["is_flag"]]["name"].sort_values()
-    subopts = draft_codes.loc[draft_codes["is_suboption"]]["name"].sort_values()
-    codes = ~(draft_codes["is_flag"] | draft_codes["is_suboption"])
-    print("Standard flags:")
-    print("".join(flags))
-    print("Standard codes:")
-    print("".join(draft_codes.loc[codes]["name"]))
-    print("Codes with options:")
-    print(" ".join(subopts))
-
-def construct_pool(only_codes=False, allow_suboptions=True,
-                   add_challenges=False, always_on={}, ban_category={}):
+def construct_pool():
     codes = pandas.DataFrame(options.NORMAL_CODES)
     alpha_codes = pandas.DataFrame(options.ALL_FLAGS)
     alpha_codes["is_flag"] = True
     alpha_codes["long_description"] = alpha_codes["description"]
     alpha_codes["category"] = "flags"
-    codes = pandas.concat((codes, pandas.DataFrame(alpha_codes)))
-
-    if add_challenges:
-        SUBOPTION_CODES.add("challenge")
-        # will probably need weights for this
-        new_code = {
-            "name": "challenge",
-            "category": "challenge",
-            "long_description": "Self imposed challenge",
-            "choices":  CHALLENGES
-        }
-        codes = codes.append(new_code, ignore_index=True)
-
-    codes["is_flag"] = codes["is_flag"].fillna(False)
-    codes = codes.reset_index(drop=True)
-
-    codes["is_suboption"] = False
-    if allow_suboptions:
-        codes = split_suboptions(codes)
-    else:
-        # Drop multiplier codes
-        codes = codes.loc[~codes["name"].isin(SUBOPTION_CODES)]
-
-    draft_codes = []
-    always_on = {code for code in (always_on or []) if not code.startswith("!")}
-    codes["status"] = None
-    if always_on:
-        turn_on = codes["name"].isin(always_on)
-        draft_codes.extend(codes.loc[turn_on].index)
-        codes.loc[turn_on,"status"] = "always_on"
-        print(f"Adding {always_on} into pool automatically.")
-
-    ban_code = {code[1:] for code in (always_on or []) if code.startswith("!")}
-    get_banned = codes["name"].isin(ban_code)
-    if ban_code:
-        print(f"Banning {ban_code} from pool.")
-    if ban_category:
-        get_banned |= codes["category"].isin(ban_category)
-        print(f"Banning category {ban_category} from pool.")
-    codes.loc[get_banned,"status"] = "banned"
-
-    if only_codes:
-        codes = codes.loc[~codes["is_flag"]]
-        print(f"Dropping standard flags from pool.")
-
-    return draft_codes, codes
-
-def pull_from_pool(codes, draft_codes, draft_size=3, allow_undo=False):
-    if allow_undo:
-        pool = codes.index
-    else:
-        pool = codes.index.difference(draft_codes)
-    pool = pool.intersection(codes.loc[codes["status"].isna()].index)
-
-    choices = codes.loc[pool].sample(draft_size)[:]
-    choices["selected"] = choices.index.isin(draft_codes)
-    return choices
-
-def display_choices(choices, draft_codes, round, rerolls=0):
-    print(f"\n[Round {round + 1}]\ntotal choices so far: {len(draft_codes)}\nChoices:")
-
-    for i, (idx, choice) in enumerate(choices.iterrows()):
-        i += 1
-        cstatus = ""
-        cstatus += "UNDO" if choice["selected"] else ""
-        # FIXME: "replace" tag
-        cstatus = f" [{cstatus}]" if cstatus else ""
-        print(f"({i}){cstatus} {choice['name']} <{choice['category']}>: {choice['long_description']}")
-    if rerolls > 0:
-        print(f"({i}) reroll")
-
-def show_flags(codes):
-    print(codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
+    return pandas.concat((codes, pandas.DataFrame(alpha_codes)))
