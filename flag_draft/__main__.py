@@ -87,7 +87,7 @@ for choices in drafter.draft(args.draft_length, args.draft_size):
             continue
 
         is_reroll = choice == allowed_choices[-1] and drafter.rerolls > 0
-        drafter.draft_code(idx=choices.index[choice - 1],
+        drafter.draft_code(idx=None if is_reroll else choices.index[choice - 1],
                            is_reroll=is_reroll)
         break
 

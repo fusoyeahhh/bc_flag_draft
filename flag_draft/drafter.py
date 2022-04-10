@@ -101,18 +101,18 @@ class BCFlagDrafter:
         return list(set([idx]) - set(opt.index))
 
     def draft_code(self, idx, is_reroll=False):
+        if is_reroll:
+            self.rerolls -= int(is_reroll)
+            assert self.rerolls >= 0
+            self.round += int(not is_reroll)
+            return
+
         self._maybe_replace_option(idx)
 
         if self.codes.loc[idx]["selected"]:
             self.draft_codes.remove(idx)
         else:
             self.draft_codes.append(idx)
-
-        if is_reroll:
-            import pdb; pdb.set_trace()
-        self.rerolls -= int(is_reroll)
-        assert self.rerolls >= 0
-        self.round += int(not is_reroll)
 
     def show_flags(self):
         print(self.codes.sort_values(by="category").set_index(["name", "category"])[["long_description"]])
