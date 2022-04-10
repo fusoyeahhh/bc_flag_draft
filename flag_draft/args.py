@@ -23,7 +23,7 @@ def construct_args(argp):
                       help="Provided with numerical argument, do this many choices per round.")
     argp.add_argument("-R", "--draft-rerolls", type=int, default=0,
                       help="Allow this many rerolls. Default is zero.")
-    argp.add_argument("-d", "--draft-length", type=int, default=5,
+    argp.add_argument("-d", "--draft-length", type=int, default=10,
                       help="Provided with numerical argument, do this many draft rounds.")
     argp.add_argument("--standard-draft", action="store_true",
                       help="Remove codes which are unsafe, not gameplay related "
