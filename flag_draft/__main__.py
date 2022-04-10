@@ -45,7 +45,7 @@ drafter = BCFlagDrafter(only_codes=args.only_codes,
                         add_challenges=args.add_challenges,
                         rerolls=args.draft_rerolls,
                         always_on=args.always_on,
-                        ban_category=args.ban_categories)
+                        ban_category=args.ban_category)
 
 if args.show_flags:
     drafter.show_flags()
