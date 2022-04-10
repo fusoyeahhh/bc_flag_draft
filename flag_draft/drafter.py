@@ -96,9 +96,14 @@ class BCFlagDrafter:
         if not opt["is_suboption"]:
             return idx
 
-        _codes = self.codes.loc[self.codes.index.intersection([idx])]
-        opt = _codes.loc[opt["suboption_of"] == _codes["suboption_of"]]
-        return list(set([idx]) - set(opt.index))
+        # Get all associated codes
+        _codes = self.codes.loc[opt["suboption_of"] == self.codes["suboption_of"]]
+        # Get those which are already in the draft (there should be 0 or 1)
+        opt = _codes.loc[_codes.index.isin(self.draft_codes)]
+        # No options available to replace
+        if len(opt) == 0:
+            return
+        self.draft_codes = list(set(self.draft_codes) - set([opt.index[0]]))
 
     def draft_code(self, idx, is_reroll=False):
         if is_reroll:
