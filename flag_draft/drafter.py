@@ -104,8 +104,8 @@ class BCFlagDrafter:
         if is_reroll:
             self.rerolls -= int(is_reroll)
             assert self.rerolls >= 0
-            self.round += int(not is_reroll)
             return
+        self.round += 1
 
         self._maybe_replace_option(idx)
 
