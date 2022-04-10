@@ -45,6 +45,7 @@ class BCFlagDrafter:
         always_on = {code for code in self.always_on
                                         if not code.startswith("!")}
         self.codes["status"] = None
+        self._draft_codes = []
         if always_on:
             turn_on = self.codes["name"].isin(always_on)
             self._draft_codes = self.codes.loc[turn_on].index
