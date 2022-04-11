@@ -15,8 +15,8 @@ def construct_args(argp):
                            "A subsequent appearance and selection will remove flag from draft.")
     argp.add_argument("-B", "--ban-category", action="append",
                       help="Code category will not be presented as an option.")
-    argp.add_argument("-o", "--only-codes", action="store_true",
-                      help="Only randomize over codes, not flags")
+    argp.add_argument("-D", "--dont-remove-alpha-flags", action="store_true",
+                      help="Randomize over codes and alphabet flags.")
     argp.add_argument("-c", "--add-challenges", action="store_true",
                       help="Add self-imposed challenges to pool.")
     argp.add_argument("-s", "--draft-size", type=int, default=3,
@@ -33,7 +33,6 @@ def construct_args(argp):
     return argp
 
 def enable_standard_draft(args):
-    args.only_codes = True
     args.allow_suboptions = True
     args.ban_categories = ["gamebreaking"]
     # TODO: check what the standard should be

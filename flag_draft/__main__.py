@@ -40,7 +40,11 @@ args = argp.parse_args()
 if args.standard_draft:
     args = args_.enable_standard_draft(args)
 
-drafter = BCFlagDrafter(only_codes=args.only_codes,
+if args.dont_remove_alpha_flags is None:
+    args.dont_remove_alpha_flags = False
+print(args.dont_remove_alpha_flags)
+
+drafter = BCFlagDrafter(only_codes=not args.dont_remove_alpha_flags,
                         allow_suboptions=args.allow_suboptions,
                         add_challenges=args.add_challenges,
                         rerolls=args.draft_rerolls,
