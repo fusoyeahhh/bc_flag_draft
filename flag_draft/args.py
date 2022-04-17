@@ -39,8 +39,11 @@ def enable_standard_draft(args):
     args.ban_categories = ["gamebreaking"]
     # TODO: check what the standard should be
     args.always_on = args.always_on or []
+    # TODO: Handle with banlist
+    """
     args.always_on += ["!bingoboingo", "!sketch", "!playsitself", "!makeover",
                        "!removeflashing", "!sprint",
                        "!johnnyachaotic", "!johnnydmad"]
+    """
 
     return args
