@@ -1,4 +1,5 @@
 import sys
+import os
 import argparse
 import pandas
 pandas.set_option("display.max_rows", 1000)
@@ -39,6 +40,20 @@ args = argp.parse_args()
 
 if args.standard_draft:
     args = args_.enable_standard_draft(args)
+
+if args.ban_list is not None:
+    if not os.path.exists(args.ban_list):
+        sys.exit(f"Ban list {args.ban_list} does not exist")
+    
+    with open(args.ban_list, "r") as fin:
+        ban_list = ["!" + code.strip()
+                       for code in fin.readlines() if code.strip()]
+        if args.always_on is not None:
+            args.always_on += ban_list
+        else:
+            args.always_on = ban_list
+                                  
+        args.always_on = set(args.always_on)
 
 if args.dont_remove_alpha_flags is None:
     args.dont_remove_alpha_flags = False

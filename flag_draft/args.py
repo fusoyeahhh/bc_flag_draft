@@ -15,6 +15,8 @@ def construct_args(argp):
                            "A subsequent appearance and selection will remove flag from draft.")
     argp.add_argument("-B", "--ban-category", action="append",
                       help="Code category will not be presented as an option.")
+    argp.add_argument("-l", "--ban-list",
+                      help="Codes listed in the ban list will be removed.")
     argp.add_argument("-D", "--dont-remove-alpha-flags", action="store_true",
                       help="Randomize over codes and alphabet flags.")
     argp.add_argument("-c", "--add-challenges", action="store_true",

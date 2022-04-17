@@ -60,6 +60,7 @@ class BCFlagDrafter:
         if self.ban_category:
             get_banned |= self.codes["category"].isin(self.ban_category)
             print(f"Banning category {self.ban_category} from pool.")
+        # TODO: just remove them here?
         self.codes.loc[get_banned,"status"] = "banned"
 
         if self.only_codes:
@@ -81,12 +82,11 @@ class BCFlagDrafter:
             pool = self.codes.index
         else:
             pool = self.codes.index.difference(self.draft_codes)
-        elig = self.codes["status"].isna()
+        elig = self.codes["status"].isna() | (self.codes["status"] != "banned")
         pool = pool.intersection(self.codes.loc[elig].index)
 
         self.codes["selected"] = self.codes.index.isin(self.draft_codes)
-        return self.codes.loc[pool].sample(draft_size)[:]
-
+        return self.codes.loc[pool].sample(draft_size)[:] 
     def randomize_flags(self, nflags):
         choices = self.pull_from_pool(min(nflags, len(self.draft_codes)))
         self.draft_codes = list(choices.index)
